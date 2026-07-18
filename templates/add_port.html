@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}
+    Add Port
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6" style="-webkit-box-shadow: 5px 5px 15px -1px #6d6d6d;
+box-shadow: 5px 5px 15px -1px #7c7c7c;border-radius: 10px;">
+
+      <div class="text-white mt-4" style="margin-bottom: 10px;">
+        <div class="card-body">
+          <h3 class="card-title text-center mb-4 " style="color: black;">Add Plot for Vessel</h3>
+          <h5 class="text-center text-info mb-4">{{ item.vessel_name }}</h5>
+
+          <form method="POST">
+            <!-- PORT CHECKBOXES -->
+            <div class="form-group">
+              <label class="font-weight-bold" style="color: black;">Select Plots to Allot:</label>
+              <div class="border rounded p-3" style="max-height: 250px; overflow-y: auto;">
+                <div class="row">
+                  {% for port in port_areas %}
+                    <div class="col-md-6 mb-2">
+                      <div class="form-check  p-2 rounded shadow-sm" >
+                        <input class="form-check-input" type="checkbox" name="port_numbers" value="{{ port.port_number }}" id="port{{ loop.index }}">
+                        <label class="form-check-label " for="port{{ loop.index }}">
+                          <strong style="color: black;">{{ port.port_number }}</strong>
+                          <span class="badge badge-secondary">{{ "Platform" if port.kacha else "Kacha" }}</span>
+                          <small class="text-muted">({{ port.area }} sqm)</small>
+                        </label>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+              <small class="form-text text-muted mt-1">Check one or more plots to allot.</small>
+            </div>
+
+            <!-- DATE -->
+            <div class="form-group mt-3">
+              <label for="f-date" style="color: black;">Start Date:</label>
+              <input type="date" name="f-date" class="form-control" required>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <a class="backbtn" href="{{ url_for('vessels.more_info', item_id=item.id) }}">Back</a>
+              <button type="submit" class="addplotbtn">Add Plot(s)</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<style>
+    .backbtn {
+    text-align: center;
+    background-color: gray;
+    color: white;
+    text-decoration: none;
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: none;
+  }
+
+  .backbtn:hover {
+    background-color: rgb(172, 170, 170);
+    color: black;
+    text-decoration: none;
+  }
+
+  .addplotbtn {
+    text-align: center;
+    background-color: #1b7f9b;
+    /* Bootstrap warning color */
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .addplotbtn:hover {
+    background-color: #27B5C4;
+    /* Hover color */
+    color: black;
+    text-decoration: none;
+  }
+</style>
+{% endblock %}
+

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Plot Status{% endblock %}
+
+{% block content %}
+<style>
+    .custom-shadow {
+        box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
+        transition: 0.3s;
+    }
+    .custom-shadow:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+</style>
+
+<h2 class="mb-4" style="text-align: center;">Plot Status Overview</h2>
+
+<div class="row">
+    {% for port in ports %}
+    <div class="col-6 col-sm-4 col-md-2 mb-3 custom-shadow" style="box-shadow: 20px;">
+        <div class="card text-white text-center" style="font-size: 0.85em; background: {{ port.color }};">
+            <div class="card-body p-2">
+                <h6 class="mb-1">Plot {{ port.port_number }}</h6>
+                <p class="mb-1">{{ port.vessel_name }}</p>
+                <p class="mb-1">{{ port.material }}</p>
+                <p class="mb-1">{{ port.surface }}</p>
+                <p class="mb-1">{{ port.area }} sqm</p>
+                <span class="badge badge-light text-dark">{{ port.status }}</span>
+                <p class="mb-1 mt-1">Days: {{ port.days_passed }}</p>
+
+                <!-- Allotment Circles -->
+                <div>
+                    {% for i in range(port.allotments) %}
+                        <span style="display: inline-block; width: 8px; height: 8px; background: white; border-radius: 50%; margin: 1px;"></span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

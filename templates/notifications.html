@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}
+    Upcoming Plot Actions
+{% endblock %}
+
+{% block content %}
+    <h2>Ports Nearing End Date</h2>
+    {%    print("due ports",due_ports) %}
+{% if ports %}
+<table class="table alternate-rows">
+    <thead>
+        <tr>
+            <th>Plot Number</th>
+            <th>Vessel</th>
+            <th>Allotment Number</th>
+            <th>End Date</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for port in ports %}
+        <tr>
+            <td>{{ port.port_number }}</td>
+            <td>{{ port.vessel.vessel_name }}</td>
+            <td>{{ port.allotment_number }}</td>
+            <td>{{ port.end_date }}</td>
+            <td>
+                <a href="{{ url_for('ports.next_allotment_port', port_id=port.id, item_id=port.vessel_id) }}" class="btn btn-primary btn-sm">Next Allotment</a>
+                <form method="POST" action="{{ url_for('ports.handover_port', port_number=port.port_number, item_id=port.vessel_id) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Handover</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+    <p>No ports nearing their end date.</p>
+{% endif %}
+{% endblock %}

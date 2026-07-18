@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Add Material{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="p-4 shadow bg-white rounded" style="width: 400px;">
+    <h4 style="text-align: center;">Add New Material</h4>
+    <form method="POST">
+        <div class="form-group" style="width: 99%;">
+            <label for="material_name">Material Name</label>
+            <input type="text" class="form-control" name="material_name" required>
+        </div>
+        <div class="form-group">
+            <label>Material Type:</label>
+            <select name="material_type" class="form-control" required>
+                <option value="Coal">Coal</option>
+                <option value="Limestone">Limestone</option>
+                <option value="Others">Others</option>
+            </select>
+        </div>
+        <button type="submit" class="addbtn">Add</button>
+        <a href="{{ url_for('config.all_info') }}" class="cancelbtn">Cancel</a>
+    </form>
+    </div></div>
+    <style>
+    .addbtn
+    {
+        text-align: center;
+        background-color: #21BF21;
+        color: white;
+        text-decoration: none;
+        padding: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+        border: none;
+    }
+    .addbtn:hover
+    {
+    background-color:#52FA52;
+    color: black;
+    text-decoration: none;
+    }
+    .cancelbtn
+    {
+        text-align: center;
+        background-color: rgb(107, 106, 106);
+        color: white;
+        text-decoration: none;
+        padding-top: 6px;
+        padding-bottom: 6px;
+        padding-left: 10px;
+        padding-right: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+        border: none;
+    }
+    .cancelbtn:hover
+    {
+        background-color:rgb(172, 170, 170);
+        color: black;
+        text-decoration: none;
+    }
+    </style>
+{% endblock %}

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login & Register</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-image: url("{{ url_for('static', filename='login_bg.jpg') }}");
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      background-color: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #098299;
+      font-weight: 700;
+      font-size: 24px;
+      letter-spacing: -0.5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      margin: 8px 0 4px 0;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #333;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
+
+    input::placeholder {
+      color: #999;
+    }
+
+    input:focus {
+      background-color: #fff;
+      outline: none;
+      border-color: #098299;
+      box-shadow: 0 0 0 3px rgba(9, 130, 153, 0.15);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      background: linear-gradient(135deg, #098299 0%, #17a2b8 100%);
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 4px 15px rgba(9, 130, 153, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #076d80 0%, #138496 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(9, 130, 153, 0.3);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .switch {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .switch a {
+      color: #098299;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .switch a:hover {
+      color: #076d80;
+      text-decoration: underline;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .error {
+      color: #dc3545;
+      font-size: 12px;
+      margin-bottom: 12px;
+      font-weight: 500;
+      padding-left: 2px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <img src="{{ url_for('static', filename='demo_chemicals_logo.jpg') }}" alt="Demo Chemicals Logo" style="height: 80px; width: auto; border-radius: 8px;">
+    </div>
+    <!-- Login Form -->
+    <!-- <form id="loginForm">
+      <h2>Login</h2>
+      <input type="email" id="loginEmail" placeholder="Email" required />
+      <div id="loginEmailError" class="error"></div>
+
+      <input type="password" id="loginPassword" placeholder="Password" required />
+      <div id="loginPasswordError" class="error"></div>
+
+      <button type="submit">Login</button>
+      <div class="switch">
+        Don’t have an account? <a onclick="showRegister()">Register</a>
+      </div>
+    </form> -->
+    <form id="loginForm" autocomplete="off">
+        <h2>Login</h2>
+
+        <input type="email" id="loginEmail" placeholder="Email" required autocomplete="off" />
+        <div id="loginEmailError" class="error"></div>
+
+        <input type="password" id="loginPassword" placeholder="Password" required autocomplete="off" />
+        <div id="loginPasswordError" class="error"></div>
+
+        <button type="submit">Login</button>
+
+        <div class="switch">
+          Don’t have an account? <a onclick="showRegister()">Register</a>
+        </div>
+    </form>
+
+
+    <!-- Register Form -->
+    <form id="registerForm" class="hidden">
+      <h2>Register</h2>
+
+      <input type="email" id="regEmail" placeholder="Email" required />
+      <div id="regEmailError" class="error"></div>
+
+      <input type="password" id="regPassword" placeholder="Password" required />
+      <div id="regPasswordError" class="error"></div>
+
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+      <div id="confirmPasswordError" class="error"></div>
+
+      <button type="submit">Register</button>
+      <div class="switch">
+        Already have an account? <a onclick="showLogin()">Login</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+
+    function showRegister() {
+      loginForm.classList.add("hidden");
+      registerForm.classList.remove("hidden");
+    }
+
+    function showLogin() {
+      registerForm.classList.add("hidden");
+      loginForm.classList.remove("hidden");
+    }
+
+    // Email validation (must end with @demochemicals.com)
+    // function validateEmail(email) {
+    //   const regex = /^[a-zA-Z0-9._%+-]+@demochemicals\.com$/;
+    //   return regex.test(email);
+    // }
+
+    function validateEmail(email) {
+      return email.endsWith("@demochemicals.com");
+    }
+    // Restricted patterns list (you can add more)
+    const restrictedPatterns = ["12345", "123456", "123456789", "12345678", "123123", "111111", "000000",
+      "password", "password1", "pass", "pass123",
+      "admin", "administrator", "root", "system",
+      "qwerty", "qwerty123", "asdfgh", "zxcvbn",
+      "welcome", "letmein", "login", "user", "guest",
+      "iloveyou", "love", "loveyou",
+      "demo", "demochemicals", "demosteel",
+      "abc", "abcd", "abc123", "abcdef",
+      "xyz", "xyz123",
+      "qazwsx", "1q2w3e", "1qaz2wsx",
+      "name", "username", "email", "mobile", "phone",
+      "dob", "birthday", "india", "indian",
+      "admin123", "superuser", "superman",
+      "dragon", "ninja", "football", "baseball",
+      "monkey", "shadow", "master", "killer",
+      "welcome123", "passw0rd", "password123",
+      "letmein123", "qwertyuiop",
+      "aaaaa", "bbbb", "cccc", "abcabc", "123123",];
+
+
+    function validatePassword(password, username = "") {
+
+      // Rule 1: Minimum length 10
+      if (password.length < 10)
+        return "Minimum length should be at least 10 characters";
+
+      // Rule 2: At least 1 special character
+      if (!/[^A-Za-z0-9]/.test(password))
+        return "Must contain at least 1 special character";
+
+      // Rule 3: At least 1 lowercase
+      if (!/[a-z]/.test(password))
+        return "Must contain at least 1 lower case character";
+
+      // Rule 4: At least 1 uppercase
+      if (!/[A-Z]/.test(password))
+        return "Must contain at least 1 upper case character";
+
+      // Rule 5: At least 1 digit
+      if (!/[0-9]/.test(password))
+        return "Must contain at least 1 numeric character";
+
+      // Rule 6: Must start with alphabet
+      if (!/^[A-Za-z]/.test(password))
+        return "Must start with an uppercase or lowercase alphabet";
+
+      // Rule 7: Must NOT end with digit
+      if (/[0-9]$/.test(password))
+        return "Must not contain any digit as last character";
+
+      // Rule 8: No character more than 2 times consecutively
+      if (/(.)\1\1/.test(password))
+        return "Must not contain any character more than 2 times consecutively";
+
+      // Rule 9: Must NOT have 5 consecutive characters from username
+      if (username) {
+        for (let i = 0; i < username.length - 4; i++) {
+          const sub = username.substring(i, i + 5);
+          if (password.toLowerCase().includes(sub.toLowerCase()))
+            return "Must not have 5 consecutive character(s) from username";
+        }
+      }
+
+      // Rule 10: Must not be palindrome
+      const reversed = password.split("").reverse().join("");
+      if (password === reversed)
+        return "Password must not be a palindrome";
+
+      // Rule 12: Must not contain restricted patterns
+      for (let pattern of restrictedPatterns) {
+        if (password.toLowerCase().includes(pattern))
+          return "Password contains restricted pattern: " + pattern;
+      }
+
+      return true;
+    }
+
+    // Password validation (8+ chars, upper, lower, special)
+    // function validatePassword(password) {
+    //   const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
+    //   return regex.test(password);
+    // }
+
+    // LOGIN FORM HANDLER
+
+    // loginForm.addEventListener("submit", async function (e) {
+    //   e.preventDefault();
+
+    //   const email = document.getElementById("loginEmail").value.trim();
+    //   const password = document.getElementById("loginPassword").value.trim();
+
+    //   let valid = true;
+
+    //   if (!validateEmail(email)) {
+    //     document.getElementById("loginEmailError").innerText =
+    //       "Email must end with @demochemicals.com";
+    //     valid = false;
+    //   } else {
+    //     document.getElementById("loginEmailError").innerText = "";
+    //   }
+
+    //   if (!validatePassword(password)) {
+    //     document.getElementById("loginPasswordError").innerText =
+    //       "incorect password format";
+    //     valid = false;
+    //   } else {
+    //     document.getElementById("loginPasswordError").innerText = "";
+    //   }
+
+    //   if (!valid) return;
+    //       const data = await res.json();
+    //       console.log("Login response:", data);
+
+    //       if (data.success) {
+    //           // 🔥 VERY IMPORTANT: USE SERVER REDIRECT
+    //           // data.redirect
+    //           window.location.href = data.redirect;
+    //       } else {
+    //           alert(data.message);
+    //       }
+    //   } catch (err) {
+    //       console.error(err);
+    //       alert("Server error, please try again later.");
+    //   }
+
+    // });
+    loginForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+
+      let valid = true;
+
+      if (!validateEmail(email)) {
+        document.getElementById("loginEmailError").innerText =
+          "Email must end with @demochemicals.com";
+        valid = false;
+      } else {
+        document.getElementById("loginEmailError").innerText = "";
+      }
+
+      if (!validatePassword(password)) {
+        document.getElementById("loginPasswordError").innerText =
+          "Incorrect password format";
+        valid = false;
+      } else {
+        document.getElementById("loginPasswordError").innerText = "";
+      }
+
+      if (!valid) return;
+
+      try {
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+        console.log("Login response:", data);
+
+        if (data.success) {
+          // Server-side redirection after successful login
+          window.location.href = data.redirect;
+        } else {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Server error, please try again later.");
+      }
+    });
+
+
+    // REGISTER FORM HANDLER
+
+    registerForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const email = document.getElementById("regEmail").value.trim();
+      const password = document.getElementById("regPassword").value.trim();
+      const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+      let valid = true;
+
+      if (!validateEmail(email)) {
+        document.getElementById("regEmailError").innerText =
+          "Email must end with @demochemicals.com";
+        valid = false;
+      } else {
+        document.getElementById("regEmailError").innerText = "";
+      }
+
+      const pwdCheck = validatePassword(password, email.split("@")[0]);
+
+      if (pwdCheck !== true) {
+        document.getElementById("regPasswordError").innerText = pwdCheck;
+        valid = false;
+      } else {
+        document.getElementById("regPasswordError").innerText = "";
+      }
+
+      if (password !== confirmPassword) {
+        document.getElementById("confirmPasswordError").innerText =
+          "Passwords do not match";
+        valid = false;
+      } else {
+        document.getElementById("confirmPasswordError").innerText = "";
+      }
+
+      if (!valid) return;
+
+
+      try {
+        const res = await fetch("/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          alert("Registration successful! Wait for Admin Approval to login.");
+          showLogin();
+          registerForm.reset();
+        } else {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Server error, please try again later.");
+      }
+    });
+  </script>
+
+  <script>
+    // Reload login if coming from browser cache (after logout)
+    window.addEventListener("pageshow", function (event) {
+      if (event.persisted) window.location.reload();
+    });
+  </script>
+
+  <script>
+    // If user somehow lands on login page while logged in (via back button)
+    fetch("/session_check")
+      .then(res => res.json())
+      .then(data => {
+        if (data.authenticated) {
+          window.location.href = "/home";
+        }
+      });
+  </script>
+
+</body>
+
+</html>

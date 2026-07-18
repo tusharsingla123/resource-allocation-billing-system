@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Edit Tax Rate{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="p-4 shadow bg-white rounded" style="width: 400px;">
+        <h2>Edit Tax Rate</h2>
+        <form method="POST" style="width:50%;">
+            <div class="form-group">
+                <label>Material Name:</label>
+                <input type="text" name="material_name" value="{{ material.material_name }}" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Material Name:</label>
+                <input type="text" name="material_id" value="{{ material.material_id }}" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label>With Effect From: </label>
+                <input type="date" name="from_date" required class="form-control"><br>
+            </div>
+            <button type="submit" class="btn btn-success">Update</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

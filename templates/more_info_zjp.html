@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% block title %}More Information{% endblock %}
+{% block content2 %}
+
+<div class="row">
+  <div class="col-md-6">
+    <h2>Vessel Details</h2>
+    <ul>
+      <li><strong>Material:</strong> {{ item.material }}</li>
+      <li><strong>Vessel Name:</strong> {{ item.vessel_name }}</li>
+      <li><strong>Vessel Quantity:</strong> {{ item.volume_bl }}</li>
+    </ul>
+  </div>
+  <div class="col-md-6">
+    <a class="btn-warning float-right ml-2" href="{{ url_for('vessels.edit_vessel', item_id=item.id) }}">✏️ Edit Vessel</a>
+
+    <a class="addnewplotbtn float-right" href="{{ url_for('ports.add_port', item_id=item.id) }}">Add New Plot</a>
+  </div>
+</div>
+
+<hr>
+<hr>
+
+<div class="row">
+  <div class="col-md-6">
+    <h4 style="color: black;">Active Plots Rent Cost:</h4>
+    <ul>
+      <li><strong>Total Cost (with GST/CGST):</strong> {{ grand_total | currency }}</li>
+    </ul>
+  </div>
+  <div class="col-md-6">
+    <h4 style="color: black;">Total Rent</h4>
+    <ul>
+      <li><strong>Total Cost (with GST/CGST):</strong> {{ total_amount_all | currency }}</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+<hr>
+<h3>Plots for this Vessel:</h3>
+
+{% for port_number, rows in grouped_ports.items() %}
+<h4>Plot Number: {{ port_number }}</h4>
+<table class="table w-100 alternate-rows" style="border: none;">
+  <thead>
+    <tr style="background-color: white; color: black;">
+      <th>Plot Number</th>
+      <th>Allot</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Base Rate</th>
+      <th>Penalty /Day</th>
+      <th>Total Penalty</th>
+      <th>Total Amount</th>
+      <th>Adv Note (Penalty)</th>
+      <th>Adv Note (Base)</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% set ns = namespace(total=0) %}
+    {% for row in rows %}
+    {% set ns.total = ns.total + row.total_amount %}
+    <tr>
+      <td>{{ row.port.port_number }}</td>
+      <td>{{ row.port.allotment_number }}</td>
+      <td>{{ row.port.start_date | format_date }}</td>
+      <td>{{ row.port.end_date | format_date }}</td>
+      <td>{{ row.base_rate | currency }}</td>
+      <td>{{ row.penalty_per_day | currency_new }}</td>
+      <td>{{ row.total_penalty | currency }}</td>
+      <td>{{ row.total_amount | currency }}</td>
+
+      <!-- Adv Note Fields -->
+      <form method="POST" action="{{ url_for('ports.update_adv_note', port_id=row.port.id) }}">
+        <td><input type="date" name="adv_penalty" value="{{ row.port.adv_penalty_note }}" class="form-control"></td>
+        <td><input type="date" name="adv_base" value="{{ row.port.adv_base_note }}" class="form-control"></td>
+        <td>
+          <button class="btn btn-info btn-sm" type="submit">Save</button>
+      </form>
+
+      <a class="btn btn-warning btn-sm" href="{{ url_for('ports.edit_port', port_id=row.port.id) }}" title="Edit">✏️</a>
+
+      <form action="{{ url_for('ports.delete_port', port_id=row.port.id, item_id=item.id) }}" method="POST"
+        style="display:inline;" onsubmit="return confirm('Delete this port entry?');">
+        <button type="submit" class="btn btn-danger btn-sm" title="Delete">🗑️</button>
+        {% if row.port.handover %}
+        <button class="btn btn-outline-secondary btn-sm" disabled style="color: black; margin: 10px;">✔ Handed Over</button>
+        {% elif row.port.end_date - current_date <= timedelta(days=3) and loop.index==loop.length %} <a
+          class="btn btn-primary btn-sm"
+          href="{{ url_for('ports.next_allotment_port', port_id=row.port.id, item_id=item.id) }}" style="margin-top: 5px;" >Next Allotment</a>
+          {% else %}
+          <button class="btn btn-secondary btn-sm" style="margin-top: 5px;" disabled >Next Allotment</button>
+          {% endif %}
+
+      </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<h5 class="text-right">Total Amount for Plot {{ port_number }}: {{ ns.total | currency }}</h5>
+
+{% if rows[-1].port.handover %}
+<button class="btn btn-secondary btn-sm float-right" disabled>Already Handed Over</button>
+{% else %}
+<!-- Handover modal trigger -->
+<button type="button" class="btn btn-danger btn-sm float-right" data-toggle="modal"
+  data-target="#handoverModal{{ port_number }}" >
+  Handover Plot
+</button>
+
+<!-- Handover Modal -->
+<div class="modal fade" id="handoverModal{{ port_number }}" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <form method="POST" action="{{ url_for('ports.handover_port', port_number=port_number, item_id=item.id) }}">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Handover Plot {{ port_number }}</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <label>Handover Date:</label>
+          <input type="date" name="handover_date" class="form-control" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger">Confirm Handover</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endif %}
+{% endfor %}
+<style>
+  table {
+    border: none;
+    border-collapse: collapse;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;
+    text-align: center;
+    margin-top: 30px;
+  }
+
+  table th,
+  table td {
+    border: none !important;
+    height: 60px;
+    background-color: #fff;
+    color: black;
+  }
+
+  table thead tr th {
+    background-color: #098299;
+    color: white;
+  }
+
+  table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+
+  table tbody tr:hover {
+    background-color: #dff6fa;
+  }
+
+  h4 {
+    color: #27B5C4;
+    font-weight: bold;
+  }
+
+  table {
+    border-spacing: 0;
+  }
+
+  .addnewplotbtn {
+    text-align: center;
+    background-color: #21BF21;
+    color: white;
+    text-decoration: none;
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: none;
+  }
+
+  .addnewplotbtn:hover {
+    background-color: #52FA52;
+    color: black;
+    text-decoration: none;
+  }
+
+  .btn-warning {
+    text-align: center;
+    background-color: #ffc107;
+    /* Bootstrap warning color */
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .btn-warning:hover {
+    background-color: #ffca2c;
+    /* Hover color */
+    color: black;
+    text-decoration: none;
+  }
+</style>
+{% endblock %}
+
+
+<!-- #1b7f9b -->

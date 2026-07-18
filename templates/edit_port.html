@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Edit Plot{% endblock %}
+
+{% block content %}
+<h2>Edit Plot - {{ port.port_number }}</h2>
+
+<form method="POST">
+	<div class="form-group">
+        <label>Plot Number</label>
+        <input type="text" name="port_number" value="{{ port.port_number }}" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label>Allotment Number</label>
+        <input type="number" name="allotment_number" value="{{ port.allotment_number }}" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" name="start_date" value="{{ port.start_date }}" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-success">Update Plot</button>
+</form>
+
+{% endblock %}

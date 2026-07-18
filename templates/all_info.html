@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% block title %}
+All Information
+{% endblock %}
+
+{% block content %}
+
+<h2 class="d-flex justify-content-between align-items-center">
+    Allotment Rates
+    <a class="addbtn" href="{{ url_for('config.add_allotment_rate') }}">+ Add</a>
+</h2>
+<table style="border: none;">
+    <thead>
+        <tr>
+            <th>Allotment Number</th>
+            <th>From Date:</th>
+            <th>Kacha Rate</th>
+            <th>Platform Rate</th>
+            <th>Kacha Penalty/Day</th>
+            <th>Platform Penalty/Day</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for rate in rates %}
+        <tr>
+            <td>{{ rate.allotment_number }}</td>
+            <td>{{ rate.from_date }}</td>
+            <td>{{ rate.kacha_rate }}</td>
+            <td>{{ rate.paka_rate }}</td>
+            <td>{{ rate.kacha_penalty }}</td>
+            <td>{{ rate.paka_penalty }}</td>
+            <td>
+                <a class="editbtn" href="{{ url_for('config.edit_allotment_rate', rate_id=rate.id) }}">Edit</a>
+                <form method="POST" action="{{ url_for('config.delete_allotment_rate', rate_id=rate.id) }}"
+                    style="display:inline;" onsubmit="return confirm('Delete this entry?');">
+                    <button class="deletebtn" type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2 class="d-flex justify-content-between align-items-center">
+    Current Tax Rates
+</h2>
+<table style=" border: none; width: 50%;">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>GST (%)</th>
+            <th>CGST (%)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tax_rate in tax_rates %}
+        <tr>
+            <td>{{ tax_rate.id }}</td>
+            <td>{{ tax_rate.gst }}%</td>
+            <td>{{ tax_rate.cgst }}%</td>
+            <td>
+                <a class="editbtn" href="{{ url_for('config.edit_tax_rate', tax_id=tax_rate.id) }}">Edit</a>
+                <form action="{{ url_for('config.delete_tax_rate', tax_id=tax_rate.id) }}" method="POST"
+                    style="display:inline;">
+                    <button class="deletebtn" onclick="return confirm('Delete this tax rate?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2 class="d-flex justify-content-between align-items-center">
+    Materials
+    <a class="addbtn" href="{{ url_for('config.add_material') }}">+ Add</a>
+</h2>
+<table style="border: none;">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Material</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for material in materials %}
+        <tr>
+            <td>{{ material.id }}</td>
+            <td>{{ material.material_name }}</td>
+            <td>
+                <a class="editbtn" href="{{ url_for('config.edit_material', material_id=material.id) }}">Edit</a>
+                <form action="{{ url_for('config.delete_material',  material_id=material.id) }}" method="POST"
+                    style="display:inline;">
+                    <button class="deletebtn" onclick="return confirm('Delete this Material?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2 class="d-flex justify-content-between align-items-center">
+    All Plots in Demo Port
+    <a class="addbtn" href="{{ url_for('config.add_port_area') }}">+ Add</a>
+</h2>
+<table style="border: none;">
+    <thead>
+        <tr>
+            <th>Plot Number</th>
+            <th>Area (sqm)</th>
+            <th>Surface Type</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for port in ports %}
+        <tr>
+            <td>{{ port.port_number }}</td>
+            <td>{{ port.area }}</td>
+            <td>{{ "Platform" if port.kacha else "Kacha" }}</td>
+            <td>
+                <a class="editbtn" href="{{ url_for('config.edit_port_area', port_id=port.id) }}">Edit</a>
+                <form action="{{ url_for('config.delete_port_area', port_id=port.id) }}" method="POST" style="display:inline;">
+                    <button class="deletebtn" onclick="return confirm('Delete this port?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<h2 class="d-flex justify-content-between align-items-center">
+    Stock At Demo Port
+    <a class="addbtn" href="{{ url_for('config.add_stock') }}">+ Add</a>
+</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Month</th>
+            <th>Stock</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in Stocks %}
+    <tr>
+        <td>{{ item.Month }}</td>
+        <td>{{ item.Stock }}</td>
+        <td>
+            <a href="{{ url_for('config.edit_stock_rate', stock_id=item.id) }}" class="editbtn">Edit</a>
+            <form action="{{ url_for('config.delete_stock_rate', stock_id=item.id) }}" method="POST" style="display:inline;">
+                <button class="deletebtn" onclick="return confirm('Delete this stock?')">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+
+<style>
+    table {
+        border: none;
+        border-collapse: collapse;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        margin-bottom: 20px;
+        /* ensures no spacing gaps */
+        text-align: center;
+        margin-top: 30px;
+
+    }
+
+    table tr {
+        background-color: white;
+        color: black;
+        border: none;
+    }
+
+    table th,
+    table td {
+        border: none !important;
+        /* removes borders from cells */
+        height: 60px;
+        background-color: #fff;
+        color: black;
+
+    }
+
+    table thead tr th {
+        background-color: #098299;
+        color: white;
+    }
+
+    .editbtn {
+        text-align: center;
+        background-color: #DFE61E;
+        color: white;
+        text-decoration: none;
+        padding: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .editbtn:hover {
+        background-color: #EEF25A;
+        color: black;
+        text-decoration: none;
+    }
+
+    .deletebtn {
+        text-align: center;
+        background-color: #F21B1B;
+        color: white;
+        text-decoration: none;
+        padding: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        border: none;
+    }
+
+    .deletebtn:hover {
+        background-color: #FA3C3C;
+        color: black;
+        text-decoration: none;
+    }
+
+    .addbtn {
+        border-radius: 12px;
+        width: 10%;
+        text-align: center;
+        background-color: #1b7f9b;
+        color: white;
+        text-decoration: none;
+        padding: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        font-size: 17px;
+    }
+
+    .addbtn:hover {
+        background-color: #27B5C4;
+        color: black;
+        text-decoration: none;
+    }
+</style>
+
+{% endblock %}

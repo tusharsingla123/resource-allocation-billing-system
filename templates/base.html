@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <script src='https://kit.fontawesome.com/a076d05399.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+    integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+  <title>
+    {% block title %}
+
+    {% endblock %}
+  </title>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-md navbar-light sticky-top" style="background-color: #fff ;  background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;  border-bottom: 2px solid #098299 ;">
+    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('vessels.home_page') }}">
+      <img src="{{ url_for('static', filename='demo_chemicals_logo.jpg') }}" alt="Demo Chemicals Logo" style="height: 95px;
+              max-height: 100px;
+              width: auto;
+              margin-left: -17px;" class="navbar-logo">
+    </a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse admin" id="navbarNav">
+      <ul class="navbar-nav mr-auto">
+
+        <li>
+
+
+        </li class="nav-item">
+        <!-- <li class="nav-item">
+            <a class="nav-link" href="#">Market</a>
+          </li> -->
+      </ul>
+      <ul class="navbar-nav align-items-md-center">
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint == 'vessels.home_page' %}active{% endif %}" href="{{ url_for('vessels.home_page') }}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint == 'statistics.statistics' %}active{% endif %}" href="{{ url_for('statistics.statistics') }}">Statistics</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint == 'config.all_info' %}active{% endif %}" href="{{ url_for('config.all_info') }}">Allotment Rates</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint == 'ports.port_status' %}active{% endif %}" href="{{ url_for('ports.port_status') }}">Port Status</a>
+        </li>
+        {% if current_user.is_authenticated and current_user.__class__.__name__ == 'Admin' %}
+         <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'auth.admin_dashboard' %}active{% endif %}" 
+                href="{{ url_for('auth.admin_dashboard') }}">
+                Approvals
+             </a>
+          </li>
+        {% endif %}
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">
+            Notifications {% if due_ports|length > 0 %}<span class="badge badge-danger" style="background-color: #dc3545; color: white;">{{ due_ports|length }}</span>{% endif %}
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="alertsDropdown" style="min-width: 300px;">
+            {% if due_ports %}
+            {% for port in due_ports %}
+            <a class="dropdown-item small" href="{{ url_for('vessels.more_info', item_id=port.vessel_id) }}">
+              Port {{ port.port_number }} ({{ port.end_date }}) – {{ port.vessel.vessel_name }}
+            </a>
+            {% endfor %}
+            {% else %}
+            <span class="dropdown-item text-muted">No upcoming deadlines</span>
+            {% endif %}
+          </div>
+        </li>
+
+        <li class="nav-item admin-btn ml-md-2">
+          <form action="{{ url_for('auth.logout') }}" method="POST" style="display:inline;">
+            <button type="submit" class="power-btn" style="border:none; background:none;">
+              &#x23FB;
+            </button>
+          </form>
+        </li>
+
+      </ul>
+    </div>
+  </nav>
+  <div class="container mt-4">
+    {% block content %}
+
+    {% endblock %}
+  </div>
+
+  <div class="container-fluid mt-4 px-100">
+    {% block content2 %}
+
+    {% endblock %}
+  </div>
+
+  <div class="container-fluid mt-4">
+    {% block content3 %}
+
+    {% endblock %}
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+    integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+    integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+    crossorigin="anonymous"></script>
+
+  <!-- ✅ Global cache protection -->
+  <script>
+    // Prevent cached pages when navigating with back/forward
+    window.addEventListener("pageshow", function (event) {
+      if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+        window.location.reload();
+      }
+    });
+  </script>
+
+
+  <script>
+    // --- Auto logout after 10 mins of inactivity ---
+    let inactivityTime = 10 * 60 * 1000; // 🔁 10 minutes (10 × 60 × 1000 ms)
+    let timeout;
+
+    function resetTimer() {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        alert("You’ve been inactive for 10 minutes. You will be logged out.");
+        fetch("/logout", { method: "POST" }).then(() => {
+          window.location.href = "/login";
+        });
+      }, inactivityTime);
+    }
+
+    // Reset timer whenever user interacts with the page
+    window.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+    document.onclick = resetTimer;
+    document.onscroll = resetTimer;
+  </script>
+
+
+
+</body>
+<style>
+  /* Import Google Font */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  body {
+    background-color: #f8f9fa;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #333;
+  }
+
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: #098299;
+    letter-spacing: -0.5px;
+  }
+
+  /* Navigation Bar Styles */
+  .navbar {
+    height: auto;
+    min-height: 80px;
+    padding: 10px 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    background-color: #fff !important;
+    border-bottom: 2px solid #098299;
+  }
+
+  .navbar-logo {
+    height: 60px !important;
+    max-height: 70px !important;
+    width: auto;
+    margin-left: 0;
+  }
+
+  .navbar-nav .nav-link {
+    color: #098299 !important;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 8px 16px !important;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+  }
+
+  .navbar-nav .nav-link:hover {
+    color: #054f5d !important;
+    background-color: rgba(9, 130, 153, 0.05);
+    text-decoration: none;
+  }
+
+  .navbar-nav .nav-link.active {
+    color: #054f5d !important;
+    font-weight: 700;
+    background-color: rgba(9, 130, 153, 0.08);
+  }
+
+  /* Cards */
+  .card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+    background-color: #fff;
+    padding: 24px;
+    margin-bottom: 24px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  /* Tables */
+  table, .table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04) !important;
+    margin-top: 20px;
+    margin-bottom: 30px;
+  }
+
+  table th, .table th {
+    background-color: #098299 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px !important;
+    border: none !important;
+    text-align: center;
+    vertical-align: middle !important;
+  }
+
+  table td, .table td {
+    padding: 14px 16px !important;
+    border-top: 1px solid rgba(0,0,0,0.05) !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    font-size: 14px;
+    vertical-align: middle !important;
+    text-align: center;
+    background-color: #ffffff;
+    color: #444;
+  }
+
+  table tbody tr:nth-child(even) td, 
+  table.alternate-rows tbody tr:nth-child(even) td {
+    background-color: rgba(9, 130, 153, 0.02) !important;
+    color: #444 !important;
+  }
+
+  table tbody tr:hover td {
+    background-color: rgba(9, 130, 153, 0.06) !important;
+    color: #111 !important;
+  }
+
+  /* Buttons & Action Items */
+  .btn, button, .addbtn, .addnewplotbtn, .moreinfobtn, .excelbtn, .deletebtn, .updatebtn, .download-btn {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    padding: 8px 16px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: none !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    text-decoration: none !important;
+  }
+
+  /* Success/Primary Action Button (Teal Gradient) */
+  .addbtn, .addnewplotbtn, .download-btn, .btn-primary {
+    background: linear-gradient(135deg, #098299 0%, #17a2b8 100%) !important;
+    color: #ffffff !important;
+  }
+
+  .addbtn:hover, .addnewplotbtn:hover, .download-btn:hover, .btn-primary:hover {
+    background: linear-gradient(135deg, #076d80 0%, #138496 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(9, 130, 153, 0.2);
+    color: #ffffff !important;
+  }
+
+  /* Information/Edit Action Button (Teal Bordered or Soft blue) */
+  .moreinfobtn, .updatebtn, .btn-warning, .btn-info {
+    background: linear-gradient(135deg, #1b7f9b 0%, #27b5c4 100%) !important;
+    color: #ffffff !important;
+  }
+
+  .moreinfobtn:hover, .updatebtn:hover, .btn-warning:hover, .btn-info:hover {
+    background: linear-gradient(135deg, #156277 0%, #1e8d98 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(27, 127, 155, 0.2);
+    color: #ffffff !important;
+  }
+
+  /* Excel Export Button (Green) */
+  .excelbtn, .btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%) !important;
+    color: #ffffff !important;
+  }
+
+  .excelbtn:hover, .btn-success:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(40, 167, 69, 0.2);
+    color: #ffffff !important;
+  }
+
+  /* Danger Button (Red) */
+  .deletebtn, .btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    color: #ffffff !important;
+  }
+
+  .deletebtn:hover, .btn-danger:hover {
+    background: linear-gradient(135deg, #bd2130 0%, #b21f2d 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(220, 53, 69, 0.2);
+    color: #ffffff !important;
+  }
+
+  /* Forms & Input Fields */
+  .form-control, select, input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"] {
+    border-radius: 8px !important;
+    border: 1px solid rgba(0,0,0,0.15) !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    height: auto !important;
+    transition: all 0.2s ease !important;
+    background-color: #ffffff !important;
+    color: #333 !important;
+  }
+
+  .form-control:focus, select:focus {
+    border-color: #098299 !important;
+    box-shadow: 0 0 0 3px rgba(9, 130, 153, 0.15) !important;
+    outline: none !important;
+  }
+
+  /* Dropdown Menu Styles */
+  .dropdown-menu {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .dropdown-item {
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    transition: all 0.2s ease;
+  }
+
+  .dropdown-item:hover {
+    background-color: #098299 !important;
+    color: #ffffff !important;
+  }
+
+  /* Power (Logout) Button */
+  .power-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 24px !important;
+    line-height: 40px !important;
+    color: #dc3545 !important;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50% !important;
+    background-color: rgba(220, 53, 69, 0.05) !important;
+    box-shadow: none !important;
+  }
+
+  .power-btn:hover {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    transform: scale(1.1);
+  }
+
+  /* Fade-in Entrance Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .card, table, .table, h1, h2, h3, .slideshow-container {
+    animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+</style>
+
+</html>

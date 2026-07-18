@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Edit Vessel{% endblock %}
+
+{% block content %}
+<div class="p-4 bg-white rounded shadow" style="max-width: 500px; margin: auto;">
+    <h2 class="mb-4">Edit Vessel</h2>
+    <form method="POST">
+        <div class="form-group d-flex align-items-center justify-content-between">
+            <label class="mr-2 w-50">Material:</label>
+            <input type="text" name="material" class="form-control w-50" value="{{ item.material }}" required>
+        </div>
+        <div class="form-group d-flex align-items-center justify-content-between">
+            <label class="mr-2 w-50">Vessel Name:</label>
+            <input type="text" name="vessel_name" class="form-control w-50" value="{{ item.vessel_name }}" required>
+        </div>
+        <div class="form-group d-flex align-items-center justify-content-between">
+            <label class="mr-2 w-50">PO Number:</label>
+            <input type="text" name="purchase_order" class="form-control w-50" value="{{ item.purchase_order }}">
+        </div>
+        <div class="form-group d-flex align-items-center justify-content-between">
+            <label class="mr-2 w-50">Demo Port Volume (MT):</label>
+            <input type="number" step="0.01" name="volume-port" class="form-control w-50" value="{{ item.volume_demo_port }}">
+        </div>
+		<div class="form-group d-flex align-items-center justify-content-between">
+            <label class="mr-2 w-50">BL Volume (MT):</label>
+            <input type="number" step="0.01" name="volume-bl" class="form-control w-50" value="{{ item.volume_bl }}">
+        </div>
+        <button type="submit" class="update-btn">Update</button>
+        <a href="{{ url_for('vessels.more_info', item_id=item.id) }}" class="cancelbtn">Cancel</a>
+    </form>
+</div>
+<style>
+     .update-btn
+    {
+        text-align: center;
+        background-color: #21BF21;
+        color: white;
+        text-decoration: none;
+        padding: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+        border: none;
+    }
+    .update-btn:hover
+    {
+    background-color:#52FA52;
+    color: black;
+    text-decoration: none;
+    }
+    .cancelbtn
+    {
+        text-align: center;
+        background-color: rgb(107, 106, 106);
+        color: white;
+        text-decoration: none;
+        padding-top: 6px;
+        padding-bottom: 6px;
+        padding-left: 10px;
+        padding-right: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+        border: none;
+    }
+    .cancelbtn:hover
+    {
+        background-color:rgb(172, 170, 170);
+        color: black;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}

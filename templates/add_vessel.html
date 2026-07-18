@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Add New Vessel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="p-4 shadow bg-white rounded" style="width: 400px;">
+        <h2>Add New Vessel</h2>
+        <div class="container" style="max-width: 600px; margin-top: 20px;">
+        <form method="POST">
+            <div class="form-group">
+                <label>Material:</label>
+                <select name="material" class="form-control" required>
+                    <option value="">-- Select Material --</option>
+                    {% for mat in materials %}
+                        <option value="{{ mat.material_name }}">{{ mat.material_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Vessel Name:</label>
+                <input type="text" name="vessel_name" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Purchase Order:</label>
+                <input type="number" name="purchase_order" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Volume kept in Demo Port(tons):</label>
+                <input type="number" step="0.01" name="volume_port" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>BL Volume (tons):</label>
+                <input type="number" step="0.01" name="volume_bl" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+            <label>Select Plots to Allot:</label>
+            <div class="form-check" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+                {% for port in port_areas %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="port_numbers" value="{{ port.port_number }}" id="port{{ loop.index }}">
+                        <label class="form-check-label" for="port{{ loop.index }}">
+                            {{ port.port_number }} ({{ "Platform" if port.kacha else "Kacha" }}, {{ port.area }} sqm)
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+            </div>
+
+
+            <div class="form-group">
+                <label>Start Date:</label>
+                <input type="date" name="start_date" class="form-control" required>
+            </div>
+
+
+            <button type="submit" class="addvessel">Add Vessel</button>
+            <a class="cancelbtn" href="{{ url_for('vessels.home_page') }}">Cancel</a>
+        </form>
+
+        </div>
+    </div>
+</div>
+<style>
+    .addvessel
+    {
+        text-align: center;
+        background-color: #21BF21;
+        color: white;
+        text-decoration: none;
+        padding: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+        border: none;
+    }
+    .addvessel:hover
+    {
+    background-color:#52FA52;
+    color: black;
+    text-decoration: none;
+    }
+    .cancelbtn
+    {
+        text-align: center;
+        background-color: rgb(107, 106, 106);
+        color: white;
+        text-decoration: none;
+        padding-top: 6px;
+        padding-bottom: 6px;
+        padding-left: 10px;
+        padding-right: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+        border: none;
+    }
+    .cancelbtn:hover
+    {
+        background-color:rgb(172, 170, 170);
+        color: black;
+        text-decoration: none;
+    }
+    
+</style>
+{% endblock %}

@@ -1,0 +1,625 @@
+{% extends 'base.html' %}
+{% block title %}
+OPM
+{%endblock%}
+{%block content3 %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<h1 style="text-align: center; color: #098299; font-weight: 700; margin-top: 3%; margin-bottom: 2%;">Demo Port - Plot Management</h1>
+
+<!-- KPI Cards Row -->
+<div class="row mb-4" style="max-width: 1000px; margin: 0 auto 24px auto;">
+    <div class="col-md-4 mb-3 mb-md-0">
+        <div class="card p-3 shadow-sm text-center mb-0" style="border-top: 4px solid #098299; height: 100%;">
+            <div class="text-muted small text-uppercase font-weight-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Total Cargo Vessels</div>
+            <h2 class="mb-0 font-weight-bold" style="color: #098299; font-size: 32px;">{{ vessels | length }}</h2>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3 mb-md-0">
+        <div class="card p-3 shadow-sm text-center mb-0" style="border-top: 4px solid #ffc107; height: 100%;">
+            <div class="text-muted small text-uppercase font-weight-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Active Cargo</div>
+            <h2 class="mb-0 font-weight-bold" style="color: #ffc107; font-size: 32px;">{{ vessels | rejectattr('all_handed_over') | list | length }}</h2>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 shadow-sm text-center mb-0" style="border-top: 4px solid #28a745; height: 100%;">
+            <div class="text-muted small text-uppercase font-weight-bold mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Completed Handovers</div>
+            <h2 class="mb-0 font-weight-bold" style="color: #28a745; font-size: 32px;">{{ vessels | selectattr('all_handed_over') | list | length }}</h2>
+        </div>
+    </div>
+</div>
+
+<div class="slideshow-container" >
+
+    <!-- Cost per Ton Chart -->
+    <div class="mySlides fade" style="opacity: 1;">
+        <div class="card shadow" style="width: 100%; height: 430px; padding-left: 20px; padding-right: 20px;">
+            <div style="color: #717171;margin-top: 10px;"><span style="font-weight: bold;">AVG:</span>{{ avg_value }}</div>
+            <h5 class="mb-3 text-center">Cost per Ton (₹/Ton)</h5>
+            <canvas id="costChart" style="max-height: 355px; max-width: 100%; "></canvas>
+        </div>
+    </div>
+
+    <!-- Turnaround Time Chart -->
+    <div class="mySlides fade" style="opacity: 1;">
+        <div class="card shadow " style="width: 100%; height: 430px; padding-left: 20px; padding-right: 20px;">
+            <h5 class="mb-3 text-center">Vessel Turnaround Time (Days)</h5>
+            <canvas id="turnaroundChart" style="max-height: 390px; width: 100%;"></canvas>
+        </div>
+    </div>
+
+    
+    <div class="mySlides fade" style="opacity: 1;">
+        <div class="card shadow" style="width: 100%; height: 430px; padding: 20px;">
+            <h5 class="mb-3 text-center">Coal Volume (BL)</h5>
+            <canvas id="coalChart" style="max-height: 370px; width: 100%;"></canvas>
+        </div>
+    </div>
+
+    <div class="mySlides fade" style="opacity: 1;">
+        <div class="card shadow" style="width: 100%; height: 430px; padding: 20px;">
+            <h5 class="mb-3 text-center">Limestone Volume (BL)</h5>
+            <canvas id="limestoneChart" style="max-height: 370px; width: 100%;"></canvas>
+        </div>
+    </div>
+
+    <div class="mySlides fade" style="opacity: 1;">
+        <div class="card shadow" style="width: 100%; height: 430px; padding: 20px;">
+            <h5 class="mb-3 text-center">Coal Monthly Cost</h5>
+            <canvas id="coalMonthlyCostChart" style="max-height: 370px; width: 100%;"></canvas>
+        </div>
+    </div>
+
+    <div class="mySlides fade" style="opacity: 1;">
+        <div class="card shadow" style="width: 100%; height: 430px; padding: 20px;">
+            <h5 class="mb-3 text-center">Limestone Monthly Cost</h5>
+            <canvas id="limestoneMonthlyCostChart" style="max-height: 370px; width: 100%;"></canvas>
+        </div>
+    </div>
+
+    <div class="mySlides fade" style="opacity: 1;">
+        <!-- <div class="card shadow" style="width: 100%; height: 400px; padding: 20px;">
+            <h5 class="mb-3 text-center">Combined (Stock vs Total Rent)</h5>
+            <canvas id="stockCostChart" style="max-height: 340px; width: 100%;"></canvas>
+        </div> -->
+        <div class="card shadow" style="width: 100%; height: 430px; padding: 20px;">
+            <h5 class="mb-3 text-center">Stock vs Total Amount (Monthly)</h5>
+            <canvas id="stockAmountChart" style="max-height: 370px; width: 100%;"></canvas>
+        </div>
+    </div>
+
+    <a class="prev" onclick="plusSlides(-1)">❮</a>
+    <a class="next" onclick="plusSlides(1)">❯</a>
+</div>
+
+<div class="d-flex align-items-center justify-content-between" style="padding: 20px;">
+    <a href="{{ url_for('vessels.export_all_vessels') }}" class="download-btn">
+        <i class="fa fa-download"></i> Download All Vessel Data (Excel)
+    </a>
+    <a class="addbtn" href="{{ url_for('vessels.add_vessel') }}"> <i class="fa fa-plus"></i> Add New Vessel</a>
+</div>
+<table style="border: none;">
+    <thead>
+        <tr style="background-color: white; color: black;">
+            <th scope="col">ID</th>
+            <th scope="col">Material</th>
+            <th scope="col">PO no.</th>
+            <th scope="col">Vessel Name</th>
+            <th scope="col">Quantity BL</th>
+            <th scope="col">Plots</th>
+            <th scope="col">Handover Status</th>
+            <th scope="col">Details</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for v in vessels %}
+        <tr>
+            <td style="font-weight: 600; color: #098299;">#{{ v.item.id }}</td>
+            <td>
+                {% if 'Coal' in v.item.material %}
+                <span class="badge" style="background-color: #343a40; color: #fff; padding: 6px 12px; font-size: 12px; border-radius: 6px;"><i class="fas fa-cubes"></i> Coal</span>
+                {% elif 'Limestone' in v.item.material %}
+                <span class="badge" style="background-color: #17a2b8; color: #fff; padding: 6px 12px; font-size: 12px; border-radius: 6px;"><i class="fas fa-mountain"></i> Limestone</span>
+                {% else %}
+                <span class="badge badge-secondary" style="padding: 6px 12px; font-size: 12px; border-radius: 6px;">{{ v.item.material }}</span>
+                {% endif %}
+            </td>
+            <td style="font-family: monospace; font-size: 13px;">{{ v.item.purchase_order }}</td>
+            <td style="font-weight: 500;">{{ v.item.vessel_name }}</td>
+            <td style="font-weight: 600;">{{ "{:,.0f}".format(v.item.volume_bl) }} MT</td>
+            <td>
+                {% if v.port_numbers %}
+                    {% for p in v.port_numbers %}
+                    <span class="badge" style="border: 1px solid rgba(9, 130, 153, 0.2); color: #098299; padding: 4px 8px; margin: 1px; border-radius: 4px; background: rgba(9, 130, 153, 0.03); font-weight: 600;">#{{ p }}</span>
+                    {% endfor %}
+                {% else %}
+                <span class="text-muted">-</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if v.all_handed_over %}
+                <span class="badge badge-success py-2 px-3" style="border-radius: 20px; font-size: 12px; background-color: #d4edda; color: #155724; font-weight: 600;"><i class="fas fa-check-circle mr-1"></i> Completed</span>
+                {% else %}
+                <span class="badge py-2 px-3" style="border-radius: 20px; font-size: 12px; background-color: #fff3cd; color: #856404; font-weight: 600;"><i class="fas fa-shipping-fast mr-1"></i> Active Cargo</span>
+                {% endif %}
+            </td>
+
+            <td>
+                <a class="moreinfobtn" href="{{ url_for('vessels.more_info', item_id=v.item.id) }}" style="padding: 6px 12px !important; font-size: 13px !important;"><i class="fas fa-info-circle"></i> Details</a>
+            </td>
+            <td>
+                <div class="d-inline-flex gap-2">
+                    <a class="excelbtn" href="{{ url_for('vessels.export_vessel', item_id=v.item.id) }}" style="padding: 6px 12px !important; font-size: 13px !important;">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </a>
+
+                    <form action="{{ url_for('vessels.delete_vessel', item_id=v.item.id) }}" method="POST"
+                        onsubmit="return confirm('Are you sure you want to delete this vessel?');" style="display:inline;">
+                        <button type="submit" class="deletebtn" style="padding: 6px 12px !important; font-size: 13px !important; margin-left: 5px;">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>// Force reload when navigating backwindow.history.pushState(null, "", window.location.href);
+  window.onpopstate = function() {
+      window.location.replace("/home");
+  };</script>
+<!-- value of avg_value -->
+<script>
+    const avgValue = {{ avg_value }};
+    console.log("AVG:", avgValue);
+</script>
+
+<script>
+    const limestoneCtx = document.getElementById('limestoneChart').getContext('2d');
+    const limestoneChart = new Chart(limestoneCtx, {
+        type: 'line', // Area chart
+        data: {
+            labels: {{ limestone_labels | tojson }},
+    datasets: [{
+        data: {{ limestone_volumes | tojson }},
+        backgroundColor: 'rgba(54, 162, 235, 0.3)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        fill: true,
+        tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+            plugins: {
+            legend: { display: false } // Hide legend
+        },
+        scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Volume BL (Tons)' } },
+            x: { title: { display: true, text: 'Vessel Name' } }
+        }
+    }
+});
+</script>
+
+<script>
+    const coalCtx = document.getElementById('coalChart').getContext('2d');
+    const coalChart = new Chart(coalCtx, {
+        type: 'line', // Still 'line', but with fill enabled
+        data: {
+            labels: {{ coal_labels | tojson }},
+    datasets: [{
+        // label: 'Volume BL',
+        data: {{ coal_volumes | tojson }},
+        backgroundColor: 'rgba(54, 162, 235, 0.3)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        fill: true,
+        tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+            plugins: {
+            legend: { display: false } // Hides the "Volume BL" button
+        },
+
+        scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Volume BL (Tons)' } },
+            x: { title: { display: true, text: 'Vessel Name' } }
+        }
+    }
+});
+</script>
+
+<!-- Coal Monthly Cost Chart -->
+<!-- <canvas id="coalMonthlyCostChart"></canvas> -->
+<script>
+    function renderCoalMonthlyCostChart() {
+        const canvas = document.getElementById('coalMonthlyCostChart');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ coal_month | tojson }},
+    datasets: [{
+        label: "Coal Monthly Cost",
+        data: {{ coal_cost | tojson }},
+        backgroundColor: "rgba(54,162,235,0.3)",
+        borderColor: "rgba(54,162,235,1)",
+        fill: true,
+        tension: 0.3
+            }]
+        },
+    options: {
+        responsive: true,
+            plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                    title: { display: true, text: "Cost" }
+            },
+            x: {
+                title: { display: true, text: "Month" }
+            }
+        }
+    }
+    });
+}
+
+    renderCoalMonthlyCostChart();
+</script>
+
+
+<!-- Limestone Monthly Cost Chart -->
+<!-- <canvas id="limestoneMonthlyCostChart"></canvas> -->
+<script>
+    function renderLimestoneMonthlyCostChart() {
+        const canvas = document.getElementById('limestoneMonthlyCostChart');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ limestone_month | tojson }},
+    datasets: [{
+        label: "Limestone Monthly Cost",
+        data: {{ limestone_cost | tojson }},
+        backgroundColor: "rgba(54,162,235,0.3)",   // 
+        borderColor: "rgba(54,162,235,1)",         // 
+        fill: true,
+        tension: 0.3
+            }]
+        },
+    options: {
+        responsive: true,
+            plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                    title: { display: true, text: "Cost" }
+            },
+            x: {
+                title: { display: true, text: "Month" }
+            }
+        }
+    }
+    });
+}
+
+    renderLimestoneMonthlyCostChart();
+</script>
+
+<!-- Combined Stock vs Total Rent Chart -->
+<script>
+    function drawStockAmountChart(merged_data) {
+        const months = merged_data.map(row => row.month);
+        const stockValues = merged_data.map(row => row.stock);
+        const amountValues = merged_data.map(row => row.total_amount);
+
+        const ctx = document.getElementById("stockAmountChart").getContext("2d");
+
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: "Stock",
+                        data: stockValues,
+                        borderColor: "blue",
+
+                        tension: 0.3,
+                        fill: false
+                    },
+                    {
+                        label: "Total Amount",
+                        data: amountValues,
+                        borderColor: "red",
+                        
+                        tension: 0.3,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: "Cost" }
+                    },
+                    x: {
+                        title: { display: true, text: "Month" }
+                    }
+                }
+            }
+        });
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        const mergedData = {{ merged_data | tojson }};
+        console.log("Merged Data:", mergedData);  // ← Check your browser console
+
+        drawStockAmountChart(mergedData);
+    });
+</script>
+
+
+
+
+<!-- 🔒 Lock Back Button After Login -->
+<script>
+    // Disable back navigation while logged in
+    window.history.pushState(null, "", window.location.href);
+    window.onpopstate = function () {
+        window.history.pushState(null, "", window.location.href);
+    };
+</script>
+
+<!-- 🧠 Extra safety: if the page comes from cache (bfcache), reload -->
+<script>
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
+</script>
+
+
+
+<script>
+    let slideIndex = 1;
+    document.addEventListener("DOMContentLoaded", function () {
+        showSlides(slideIndex);
+    });
+
+    function plusSlides(n) {
+        showSlides(slideIndex += n);
+    }
+
+    function currentSlide(n) {
+        showSlides(slideIndex = n);
+    }
+
+    function showSlides(n) {
+        const slides = document.getElementsByClassName("mySlides");
+        const dots = document.getElementsByClassName("dot");
+        if (slides.length === 0) return;
+
+        if (n > slides.length) slideIndex = 1;
+        if (n < 1) slideIndex = slides.length;
+
+        for (let i = 0; i < slides.length; i++) {
+            slides[i].classList.remove("active-slide");
+        }
+
+        for (let i = 0; i < dots.length; i++) {
+            dots[i].classList.remove("active");
+        }
+
+        slides[slideIndex - 1].classList.add("active-slide");
+        dots[slideIndex - 1].classList.add("active");
+    }
+</script>
+<script>
+    const ctx = document.getElementById('costChart').getContext('2d');
+    const costChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels| tojson }},
+    datasets: [{
+        label: '₹ / Ton',
+        data: {{ chart_values| tojson }},
+        fill: false,
+        borderColor: 'blue',
+        tension: 0.3
+            }]
+        },
+    options: {
+        responsive: true,
+            plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: context => '₹ ' + context.raw.toLocaleString()
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                    title: {
+                    display: true,
+                        text: '₹ / Ton'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                        text: 'Vessel Name'
+                }
+            }
+        },
+        elements: {
+            point: {
+                radius: 3
+            },
+            line: {
+                borderWidth: 1.5
+            }
+        }
+    }
+    });
+    const ctx2 = document.getElementById('turnaroundChart').getContext('2d');
+    const turnaroundChart = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: {{ turnaround_data | map(attribute = 'vessel_name') | list | tojson }},
+    datasets: [{
+        label: 'Days Taken',
+        data: {{ turnaround_data | map(attribute = 'days') | list | tojson }},
+        borderWidth: 1,
+        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+            }]
+        },
+    options: {
+        responsive: true,
+            maintainAspectRatio: false,
+                scales: {
+            y: {
+                beginAtZero: true,
+                    title: { display: true, text: 'Days' }
+            },
+            x: {
+                title: { display: true, text: 'Vessel Name' }
+            }
+        },
+        plugins: {
+            legend: { display: false }
+        }
+    }
+    });
+</script>
+<style>
+    .slideshow-container {
+        max-width: 1000px;
+        position: relative;
+        margin: auto;
+    }
+
+    /* Next & previous buttons */
+    .prev,
+    .next {
+        cursor: pointer;
+        position: absolute;
+        top: 50%;
+        width: auto;
+        padding: 16px;
+        margin-top: -22px;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+        transition: 0.6s ease;
+        border-radius: 0 3px 3px 0;
+        user-select: none;
+    }
+
+    /* Position the "next button" to the right */
+    .next {
+        right: 0;
+        border-radius: 3px 0 0 3px;
+    }
+
+    /* On hover, add a black background color with a little bit see-through */
+    .prev:hover,
+    .next:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    /* Caption text */
+    .text {
+        color: #f2f2f2;
+        font-size: 15px;
+        padding: 8px 12px;
+        position: absolute;
+        bottom: 8px;
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Number text (1/3 etc) */
+    .numbertext {
+        color: #f2f2f2;
+        font-size: 12px;
+        padding: 8px 12px;
+        position: absolute;
+        top: 0;
+    }
+
+    /* The dots/bullets/indicators */
+    .dot {
+        cursor: pointer;
+        height: 15px;
+        width: 15px;
+        margin: 0 2px;
+        background-color: #bbb;
+        border-radius: 50%;
+        display: inline-block;
+        transition: background-color 0.6s ease;
+    }
+
+    .active,
+    .dot:hover {
+        background-color: #717171;
+    }
+
+    /* Fading animation */
+    .fade {
+        animation-name: fade;
+        animation-duration: 1.5s;
+    }
+
+    @keyframes fade {
+        from {
+            opacity: .4
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+
+    /* On smaller screens, decrease text size */
+    @media only screen and (max-width: 300px) {
+
+        .prev,
+        .next,
+        .text {
+            font-size: 11px
+        }
+    }
+
+    .mySlides {
+        display: none !important;
+    }
+
+    .mySlides.active-slide {
+        display: block !important;
+    }
+</style>
+
+{% endblock %}

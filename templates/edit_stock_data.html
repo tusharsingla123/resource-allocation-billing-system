@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Edit stock data{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="p-4 shadow bg-white rounded" style="width: 400px;">
+        <h2>Edit Stock Data </h2>
+        <form method="POST" style="width: 50%;">
+            <div class="form-group">
+                <label>Month</label>
+                <input type="month" step="0.01" name="month" value="{{ stock.month }}" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label>stock</label>
+                <input type="number" step="0.01" name="stock" value="{{ stock.stock_data }}" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label>With Effect From: </label>
+                <input type="date" name="from_date" required class="form-control" required><br>
+            </div>
+            <button type="submit" class="btn btn-success">Update</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

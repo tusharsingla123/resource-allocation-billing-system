@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel - User Approvals{% endblock %}
+
+{% block content %}
+
+<head>
+    <title>Admin Panel - User Approvals</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <style>
+        nav a {
+            margin-left: 16px;
+        }
+
+        .admin {
+            margin-right: 10px;
+        }
+
+        .submit-btn {
+            width: 100px;
+        }
+
+        h3 {
+            margin-top: 40px;
+        }
+
+        .power-btn {
+            width: 40px;
+            height: 40px;
+            /* border: 2px solid #000; */
+            overflow: hidden;
+            font-size: 25px !important;
+            line-height: 1 !important;
+            color: #098299 !important;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .power-btn:hover {
+            transform: scale(0.9);
+            text-decoration: none;
+            outline: none;
+            font-size: 25px !important;
+            line-height: 1 !important;
+            color: #098299 !important;
+        }
+
+        /* TOGGLE SWITCH */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #098299;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(28px);
+        }
+
+        .table-custom {
+            border: none;
+            border-collapse: collapse;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            text-align: center;
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .table-custom th,
+        .table-custom td {
+            border: none !important;
+            height: 60px;
+            background-color: #fff;
+            color: black;
+        }
+
+        .table-custom thead tr th {
+            background-color: #098299;
+            color: white;
+            font-size: 17px;
+        }
+
+        .table-custom tbody tr:hover {
+            background-color: #e8f4f7;
+            cursor: pointer;
+        }
+
+        /* RIGHT SIDE SLIDE ALERT */
+        .toast-alert {
+            position: fixed;
+            top: 95px;
+            right: -400px;
+            /* Hide completely */
+            width: 350px;
+            /* FIXED WIDTH */
+            padding: 15px 22px;
+            background-color: #098299;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            z-index: 9999;
+            transition: right 0.5s ease-in-out;
+            word-wrap: break-word;
+            /* Wrap long text */
+            overflow: hidden;
+            /* Prevent overflow */
+        }
+
+        .toast-alert.show {
+            right: 20px;
+            /* Slide in */
+        }
+        .navbar-expand-md .navbar-nav .nav-link {
+            padding-right: 0rem;
+            padding-left: 0rem;
+        }
+
+        .admin-btn {
+            padding-right: 10px;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+
+
+
+<div class="cont">
+
+
+    <h2 style="text-align: center; color: #27B5C4; font-weight: bold; margin-top: 10px;">Admin Dashboard</h2>
+
+    <!-- USERS TABLE -->
+    <h3 style="font-size: 2rem; margin-left: 20px; border-radius: 10px;">Users</h3>
+    <div style="display: flex; justify-content: center; width: 100%;">
+        <div style="width: 98%;">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Approval</th>
+                    </tr>
+                </thead>
+                <tbody id="userTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+
+</div>
+<div id="alertBox" class="toast-alert"></div>
+
+
+<script>
+
+    let users = [];
+
+    //---------------------------------------
+    // FETCH USERS FROM BACKEND
+    //---------------------------------------
+    async function fetchUsers() {
+        try {
+            const res = await fetch("/admin/get_users");
+            const data = await res.json();
+
+            console.log("Users fetched:", data);
+
+            users = data;
+            loadUsers();
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    }
+
+    //---------------------------------------
+    // RENDER USERS IN TABLE
+    //---------------------------------------
+    function loadUsers() {
+        const table = document.getElementById("userTable");
+        table.innerHTML = "";
+
+        if (!users || users.length === 0) {
+            table.innerHTML = `
+                    <tr>
+                        <td colspan="2">No users found</td>
+                    </tr>`;
+            return;
+        }
+
+        // Show unapproved first
+        users.sort((a, b) => a.approved - b.approved);
+
+        users.forEach(user => {
+            table.innerHTML += `
+                    <tr>
+                        <td>${user.email}</td>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox"
+                                    onchange="toggleApproval(${user.id})"
+                                    ${user.approved ? "checked" : ""}>
+                                <span class="slider"></span>
+                            </label>
+                        </td>
+                    </tr>
+                `;
+        });
+    }
+
+    //---------------------------------------
+    // TOGGLE APPROVAL
+    //---------------------------------------
+    async function toggleApproval(userId) {
+        try {
+            const res = await fetch(`/admin/toggle_approval/${userId}`, {
+                method: "POST"
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                let u = users.find(x => x.id === userId);
+                u.approved = data.approved;
+
+                showAlert(`${u.email} is now ${u.approved ? 'Active' : 'Inactive'}`);
+                loadUsers();
+            }
+        } catch (error) {
+            console.error("Toggle error:", error);
+        }
+    }
+
+    //---------------------------------------
+    // ALERT BOX
+    //---------------------------------------
+    function showAlert(message) {
+        let alertBox = document.getElementById("alertBox");
+        alertBox.innerText = message;
+        alertBox.classList.add("show");
+
+        setTimeout(() => {
+            alertBox.classList.remove("show");
+        }, 2500);
+    }
+
+    //---------------------------------------
+    // INITIAL LOAD
+    //---------------------------------------
+    fetchUsers();
+
+</script>
+
+
+{% endblock %}
