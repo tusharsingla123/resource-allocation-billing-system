@@ -2,125 +2,135 @@
 
 **Project Description**
 
-The Resource Allocation Billing System is a web application designed to manage the allocation of resources such as plots, yard spaces, or operational areas. It helps users assign resources, track allocation periods, calculate rent, apply penalties, manage tax rates, and generate total payable costs. The system also includes dashboards, charts, notifications, user approval, and Excel export features to support efficient operational and billing management.
+Resource Allocation Billing System is a full-stack Python Flask web application designed to streamline port logistics, vessel scheduling, and billing allotments for maritime cargo. It allows administrators to register and manage vessels, assign and track plot (port yard) rentals, compute active and historic rental fees (incorporating penalty tariffs and tax rates), and visualize volume metrics. The application provides complete CRUD (Create, Read, Update, Delete) capabilities, data exports to Excel, and interactive analytics dashboards.
+
+---
 
 **Technical Decisions and Overview**
 
-**Frontend**
-- Framework: HTML, CSS, Bootstrap, and Jinja2 templates for server-rendered pages.
-- Responsive Design: Bootstrap layout and custom CSS are used to support desktop and smaller screen views.
-- User Interface: Provides pages for login, registration, dashboards, resource allocation, billing details, statistics, and admin approval.
-- Charts and Analytics: Chart.js is used to display cost-per-ton, turnaround time, monthly cost, stock, and material-based visualizations.
-- Form Handling: HTML forms are used for creating, updating, and deleting vessels, plots, rates, materials, tax data, and stock entries.
+### **Frontend**
+* **Template Engine**: Jinja2 templates (extending a unified base layout) integrated with Bootstrap 4.5 and custom CSS for a highly responsive, clean dashboard UI.
+* **Modern Typography**: Integrated **Inter** Google Font globally for a sleek, premium, enterprise-ready look.
+* **Data Visualization**: Uses **Chart.js** to generate interactive charts detailing Cost per Ton, Vessel Turnaround Times, Material Volumes, and Monthly Rent Overviews.
+* **Micro-Animations**: Custom `@keyframes fadeInUp` transition animations added globally for fluid entrance animations of dashboard elements.
+* **Aesthetics**: Glassmorphism login panel overlaying abstract gradient waves with matching brand-themed badge styles.
 
-**Backend**
-- Framework: Flask for routing, request handling, authentication flow, and server-side rendering.
-- Database ORM: Flask-SQLAlchemy is used to define and manage database models.
-- Authentication: Flask-Login and Flask-Bcrypt are used for login sessions and password hashing.
-- Database Migration: Flask-Migrate and Alembic are used to manage database schema changes.
-- API Endpoints: Includes JSON endpoints for login, registration, session checking, admin user approval, and CRUD operations.
-- Error Handling: Uses validation checks, redirects, flash messages, and HTTP error responses for restricted admin access.
+### **Backend**
+* **Framework**: Python 3.14+ with **Flask** using the **Application Factory Pattern** and modular Flask **Blueprints** (Auth, Vessels, Ports, Config, Statistics, Notifications) for clean separation of concerns.
+* **ORM**: **Flask-SQLAlchemy** for mapping Python object models to database tables and managing relations cleanly.
+* **Security & Authentication**: **Flask-Login** for user session tracking, password hashing using **Flask-Bcrypt**, and registration validation limited to valid corporate domains (e.g., `@demochemicals.com`).
+* **Migrations**: **Flask-Migrate** (based on Alembic) to manage schema updates and track database modifications.
 
-**Data Management**
-- Database: SQLite is used for local data storage.
-- CRUD Operations: Supports creating, reading, updating, and deleting resources, vessels, allotment rates, tax rates, materials, stock records, and port/plot data.
-- Billing Calculation: Calculates base rent, penalties, GST, CGST, and total payable cost for each allocated resource.
-- Allocation Tracking: Tracks start date, end date, allotment number, handover status, and advance note dates.
-- Reporting: Supports Excel export for vessel-wise and complete allocation data.
+### **Data Management**
+* **Database**: SQLite database stored locally at `instance/port2.db` with auto-calculating schemas for base allotment rates and penalty timelines.
+* **Business Logic**: Automated tariff pricing utility that calculates base rent and calculates dynamic penalty fees when a vessel exceeds its allotted 30-day plot rental threshold.
+* **Excel Reports**: **Pandas** paired with the **XlsxWriter** engine to compile and export custom Excel worksheets (`vessels_info.xlsx` and individual vessel allotment spreadsheets) directly from SQL query dataframes.
+
+---
 
 **Setup Instructions**
 
-**Prerequisites**
-- Python 3.10 or higher
-- pip
-- SQLite
+### **Prerequisites**
+* Python 3.12 or newer
+* pip (Python package installer)
 
-**Installation**
-- Clone the Repository
-  ```bash
-  git clone https://github.com/your-username/resource-allocation-billing-system.git
-  cd resource-allocation-billing-system
-  ```
+### **Installation & Configuration**
 
-- Go to the Flask project folder
-  ```bash
-  cd tushar
-  ```
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/Tushar/demo-port-plot-management.git
+   cd demo-port-plot-management
+   ```
 
-- Create and activate a virtual environment
-  ```bash
-  python -m venv venv
-  venv\Scripts\activate
-  ```
+2. **Create and Activate a Virtual Environment**
+   ```bash
+   # On macOS/Linux
+   python3 -m venv venv
+   source venv/bin/activate
 
-- Install dependencies
-  ```bash
-  pip install -r requirements.txt
-  ```
+   # On Windows
+   python -m venv venv
+   venv\Scripts\activate
+   ```
 
-- Configure environment variables
-  ```bash
-  set FLASK_APP=run.py
-  set FLASK_ENV=development
-  ```
+3. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-- Run database migrations, if needed
-  ```bash
-  flask db upgrade
-  ```
+4. **Initialize and Seed the Database**
+   Runs migrations, creates database tables, seeds initial allotment rates/materials, and prompts to create the administrator account:
+   ```bash
+   python3 init_db.py
+   ```
+   * Default admin setup credentials:
+     * **Email**: `admin@demochemicals.com`
+     * **Password**: `SCM1233@`
 
-- Run the application
-  ```bash
-  python run.py
-  ```
+5. **Start the Development Server**
+   ```bash
+   python3 run.py
+   ```
+   * The application runs locally at: **[http://127.0.0.1:5001](http://127.0.0.1:5001)**
 
-- Open the application
-  ```bash
-  http://localhost:5000
-  ```
+---
 
 **Project Structure**
 
-**Backend**
-- `tushar/run.py`: Main application entry point.
-- `tushar/app/__init__.py`: Flask application factory and extension setup.
-- `tushar/app/config.py`: Application configuration.
-- `tushar/app/models.py`: SQLAlchemy database models.
-- `tushar/app/routes/`: Blueprint-based route modules.
-- `tushar/app/utils/`: Utility functions for calculations, helpers, and decorators.
-- `tushar/migrations/`: Alembic migration files.
+```text
+├── app/
+│   ├── routes/              # Modular Blueprints (Controllers)
+│   │   ├── auth.py          # User registration, login, and dashboard approvals
+│   │   ├── vessels.py       # Vessel registration, editing, deleting, and exports
+│   │   ├── ports.py         # Plot allotments, handovers, next allotment triggers
+│   │   ├── config.py        # Allotment rates, surface area, and tax configurations
+│   │   ├── statistics.py    # Monthly statistics updates
+│   │   └── notifications.py # Deadline calculations and warnings
+│   ├── utils/               # Business logic helpers
+│   │   ├── calculations.py  # Pricing and penalty engine
+│   │   ├── decorators.py    # Cache blocking and security decorators
+│   │   └── helpers.py       # Helper functions
+│   ├── templates/           # Application-specific layouts (see note below)
+│   ├── config.py            # Development and Production Flask configurations
+│   ├── forms.py             # Form definitions & validation rules
+│   ├── models.py            # SQLAlchemy Database Schemas (Item, Port, User, etc.)
+│   └── __init__.py          # Application Factory Setup
+├── static/                  # Shared CSS, JavaScript, and company branding images
+├── templates/               # Jinja2 templates (Login, Dashboard, Vessels, Stats)
+├── instance/                # SQLite local DB file (port2.db)
+├── init_db.py               # Database seeding and admin creator script
+├── run.py                   # Main Flask launcher
+└── requirements.txt         # Package dependencies file
+```
 
-**Frontend**
-- `tushar/templates/base.html`: Main layout and navigation.
-- `tushar/templates/login.html`: Login and registration page.
-- `tushar/templates/home.html`: Dashboard with charts and vessel/resource list.
-- `tushar/templates/more_info.html`: Detailed allocation and billing view.
-- `tushar/templates/all_info.html`: Master data management for rates, plots, materials, tax, and stock.
-- `tushar/templates/statistics.html`: Monthly financial statistics.
-- `tushar/templates/port_status.html`: Visual resource status overview.
-- `tushar/static/`: Images and JavaScript assets.
+---
 
 **Running Tests**
-- Manual testing can be done through the browser by adding, editing, deleting, and handing over allocated resources.
-- API and form endpoints can be tested using Postman, Thunder Client, or browser developer tools.
-- Recommended flows to test:
-  - User registration and login.
-  - Admin approval toggle.
-  - Add vessel/resource allocation.
-  - Add next allotment.
-  - Handover resource.
-  - Verify rent, penalty, tax, and total cost calculations.
-  - Export data to Excel.
+
+* API endpoints can be tested manually using tools like **Postman** or **Thunder Client**.
+* Database integrity and query outputs can be verified by running the local data utility tool:
+  ```bash
+  python3 data.py
+  ```
+
+---
 
 **Features**
-- User Registration: Users can register and wait for admin approval.
-- Admin Approval: Admin can activate or deactivate user accounts.
-- Resource Allocation: Assign one or more resources/plots to a vessel or operational entry.
-- Billing Calculation: Calculates base rent, penalty, GST, CGST, and total payable amount.
-- Allotment Management: Handles multiple allotment periods and penalty-based extensions.
-- Handover Tracking: Tracks resource handover date and updates monthly cost records.
-- Master Data Management: Manage resource areas, surface type, materials, tax rates, and allotment rates.
-- Notifications: Shows resources nearing allocation end date.
-- Dashboard Analytics: Displays charts for cost, vessel turnaround time, material volumes, monthly cost, and stock comparison.
-- Excel Export: Export individual and complete allocation data.
-- Responsive UI: Uses Bootstrap and custom styling for a clean web interface.
+
+* **User Registration & Security**: Corporate validation for `@demochemicals.com` email handles and security pattern checks on password creation.
+* **KPI Analytics Dashboard**: Top-level real-time indicators tracking total cargo vessels, active plots, and completed cargo handovers.
+* **Dynamic Charting Carousel**: Slide-navigable analytics detailing vessel cost-per-ton ratios, turnaround durations, and monthly billing totals.
+* **Visual Status Indicators**: Color-coded badges and pills mapping out materials, plot listings, and current handover stages.
+* **Calculations Engine**: Dynamic rate and penalty updates utilizing allotment time bounds.
+* **Interactive Grid Operations**: Full CRUD functionalities on vessels, active yards, allotment rates, materials, and tax rates.
+* **Excel Reports Generation**: Fast binary file downloads matching the current layout of the tables.
+
+---
+
+**Future Enhancements**
+
+* **Email & SMS Notifications**: Send alerts to shipping operators when plot occupancy is nearing its 30-day billing limit.
+* **Role-Based Access Control (RBAC)**: Expand permissions levels to distinguish between guest viewers, port operators, and financial auditing managers.
+* **Geo-location Plot Map**: Interactive interactive SVG or Leaflet map showing real-time yard status visually.
+* **Multi-Currency Converter**: Support billing reports in USD, EUR, and other global currencies for international clients.
+* **Archival System**: Automatic soft-deletes and backups of historical databases.
